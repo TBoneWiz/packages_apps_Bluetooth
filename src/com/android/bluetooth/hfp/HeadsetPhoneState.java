@@ -123,7 +123,7 @@ class HeadsetPhoneState {
     }
 
     private void startListenForPhoneState() {
-        if (!mListening && mSlcReady) {
+        if (!mListening && mSlcReady && mTelephonyManager != null) {
 
             int subId = SubscriptionManager.getDefaultSubId();
 
@@ -146,7 +146,7 @@ class HeadsetPhoneState {
     }
 
     private void stopListenForPhoneState() {
-        if (mListening) {
+        if (mListening && mTelephonyManager != null) {
             try {
                 mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
             } catch (NullPointerException npe) {
