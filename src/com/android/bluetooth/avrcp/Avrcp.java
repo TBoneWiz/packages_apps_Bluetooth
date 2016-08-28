@@ -75,8 +75,6 @@ import android.net.Uri;
 import android.app.Notification;
 import android.app.NotificationManager;
 
-import org.slim.provider.SlimSettings;
-
 /**
  * support Bluetooth AVRCP profile.
  * support metadata, play status and event notification
@@ -4242,10 +4240,6 @@ public final class Avrcp {
         return isPlaying;
     }
 
-    private boolean mIsBtAbsVolCtrlEnabled() {
-       return SlimSettings.Global.getInt(mContext.getContentResolver(), SlimSettings.Global.BT_ABS_VOLUME_CTRL_ENABLED, 0) == 1;
-    }
-
     /**
      * This is called from AudioService. It will return whether this device supports abs volume.
      * NOT USED AT THE MOMENT.
@@ -4259,13 +4253,8 @@ public final class Avrcp {
                 // add 0 in byte list if absolute volume not supported
                 if ((deviceFeatures[i].mFeatures &
                         BTRC_FEAT_ABSOLUTE_VOLUME) != 0) {
-                    if (mIsBtAbsVolCtrlEnabled()) {
-                        Log.v(TAG, "isAbsoluteVolumeSupported: yes, for dev: " + i);
-                        absVolumeSupported.add((byte)1);
-                    } else {
-                        Log.v(TAG, "Absolute Volume Support disabled for dev: " + i);
-                        absVolumeSupported.add((byte)0);
-                    }
+                    Log.v(TAG, "isAbsoluteVolumeSupported: yes, for dev: " + i);
+                    absVolumeSupported.add((byte)1);
                 } else {
                     Log.v(TAG, "isAbsoluteVolumeSupported: no, for dev: " + i);
                     absVolumeSupported.add((byte)0);
