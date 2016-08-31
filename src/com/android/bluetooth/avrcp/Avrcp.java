@@ -4243,7 +4243,7 @@ public final class Avrcp {
     }
 
     private boolean mIsBtAbsVolCtrlEnabled() {
-       return SlimSettings.Global.getInt(mContext.getContentResolver(), SlimSettings.Global.BT_ABS_VOLUME_CTRL_ENABLED, 0) == 1;
+       return SlimSettings.Global.getInt(mContext.getContentResolver(), SlimSettings.Global.BT_ABS_VOLUME_CTRL_ENABLED, 1) == 1;
     }
 
     /**
