@@ -1042,6 +1042,12 @@ public class AdapterService extends Service {
             return service.getBondState(device);
         }
 
+        public long getSupportedProfiles() {
+            AdapterService service = getService();
+            if (service == null) return 0;
+            return service.getSupportedProfiles();
+        }
+
         public int getConnectionState(BluetoothDevice device) {
             AdapterService service = getService();
             if (service == null) return 0;
@@ -1983,6 +1989,10 @@ public class AdapterService extends Service {
             return BluetoothDevice.BOND_NONE;
         }
         return deviceProp.getBondState();
+    }
+
+    long getSupportedProfiles() {
+        return Config.getSupportedProfilesBitMask();
     }
 
     int getConnectionState(BluetoothDevice device) {
