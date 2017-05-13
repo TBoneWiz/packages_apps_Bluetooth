@@ -632,6 +632,7 @@ public class BluetoothMapService extends ProfileService {
                 // actionMessageSentDisconnected()
                 registerReceiver(mMapReceiver, filterMessageSent,
                     Manifest.permission.WRITE_SMS, null);
+                mRegisteredMapReceiver = true;
             } catch (Exception e) {
                 Log.e(TAG,"Unable to register map receiver",e);
             }
