@@ -240,13 +240,11 @@ final class A2dpStateMachine extends StateMachine {
             log("mConnectedDevicesList size: " + mConnectedDevicesList.size());
             if (mCurrentDevice != null || mTargetDevice != null  || mIncomingDevice != null
                     || mConnectedDevicesList.size() != 0) {
-                loge("ERROR: mConnectedDevicesList is not empty," +
-                        "current, target, or mIncomingDevice not null in Disconnected");
-                loge("mCurrentDevice is " + mCurrentDevice);
-                loge("mTargetDevice is " + mTargetDevice);
-                loge("mIncomingDevice is " + mIncomingDevice);
-                loge("mConnectedDevicesList.size() is " + mConnectedDevicesList.size());
-                return NOT_HANDLED;
+                loge("ERROR: not null state in Disconnected: current = " + mCurrentDevice
+                        + " target = " + mTargetDevice + " incoming = " + mIncomingDevice);
+                mCurrentDevice = null;
+                mTargetDevice = null;
+                mIncomingDevice = null;
             }
 
             boolean retValue = HANDLED;
@@ -367,6 +365,10 @@ final class A2dpStateMachine extends StateMachine {
         @Override
         public void enter() {
             log("Enter Pending: " + getCurrentMessage().what);
+            if (mTargetDevice != null && mIncomingDevice != null) {
+                loge("ERROR: enter() inconsistent state in Pending: current = " + mCurrentDevice
+                        + " target = " + mTargetDevice + " incoming = " + mIncomingDevice);
+            }
         }
 
         @Override
@@ -700,6 +702,10 @@ final class A2dpStateMachine extends StateMachine {
         public void enter() {
             log("Enter Connected: " + getCurrentMessage().what +
                     ", size: " + mConnectedDevicesList.size());
+            if (mTargetDevice != null || mIncomingDevice != null) {
+                loge("ERROR: enter() inconsistent state in Connected: current = " + mCurrentDevice
+                        + " target = " + mTargetDevice + " incoming = " + mIncomingDevice);
+            }
             // remove timeout for connected device only.
             if (getDeviceForMessage(CONNECT_TIMEOUT) == null) {
                 removeMessages(CONNECT_TIMEOUT);
@@ -801,7 +807,9 @@ final class A2dpStateMachine extends StateMachine {
                         mMultiDisconnectDevice = device;
                         transitionTo(mMultiConnectionPending);
                     } else {
-                        transitionTo(mPending);
+                        synchronized (A2dpStateMachine.this) {
+                            transitionTo(mPending);
+                        }
                     }
                 }
                     break;
