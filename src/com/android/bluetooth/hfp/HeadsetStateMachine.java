@@ -394,8 +394,10 @@ final class HeadsetStateMachine extends StateMachine {
 
         @Override
         public boolean processMessage(Message message) {
-            Log.d(TAG, "Disconnected process message: " + message.what +
-                                ", size: " + mConnectedDevicesList.size());
+            if (message.what != INTENT_BATTERY_CHANGED) {
+                Log.d(TAG, "Disconnected process message: " + message.what +
+                                    ", size: " + mConnectedDevicesList.size());
+            }
             if (mConnectedDevicesList.size() != 0 || mTargetDevice != null ||
                                 mIncomingDevice != null) {
                 Log.e(TAG, "ERROR: mConnectedDevicesList is not empty," +

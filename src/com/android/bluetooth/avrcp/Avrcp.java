@@ -1021,23 +1021,28 @@ public final class Avrcp {
             {
                 BluetoothDevice device;
                 int playState, position;
-                if (DEBUG)
+                if (DEBUG) {
+                    Log.v(TAG, "Event for device address " + (String)msg.obj);
                     Log.v(TAG, "MESSAGE_GET_PLAY_STATUS");
-                Log.v(TAG, "Event for device address " + (String)msg.obj);
-
+                }
                 device = mAdapter.getRemoteDevice((String) msg.obj);
                 deviceIndex = getIndexForDevice(device);
                 if (deviceIndex == INVALID_DEVICE_INDEX) {
+                    Log.e(TAG, "Event for device address " + (String)msg.obj);
                     Log.e(TAG,"Invalid device index for play status");
                     break;
                 }
                 playState = convertPlayStateToPlayStatus(deviceFeatures[deviceIndex].mCurrentPlayState);
                 position = (int)getPlayPosition(device);
-                Log.v(TAG, "Play Status for : " + device.getName() +
-                    " state: " + playState + " position: " + position);
+                if (DEBUG) {
+                    Log.v(TAG, "Play Status for : " + device.getName() +
+                        " state: " + playState + " position: " + position);
+                }
                 if (position == -1) {
-                    Log.v(TAG, "Force play postion to 0, for getPlayStatus Rsp");
-                    position = 0;
+                    if (DEBUG) {
+                        Log.v(TAG, "Force play postion to 0, for getPlayStatus Rsp");
+                        position = 0;
+                    }
                 }
 
                 getPlayStatusRspNative(playState, (int)mSongLengthMs, position,
@@ -1050,7 +1055,8 @@ public final class Avrcp {
                 int[] attrIds;
                 byte numAttr = (byte) msg.arg1;
                 ItemAttr itemAttr = (ItemAttr)msg.obj;
-                Log.v(TAG, "event for device address " + itemAttr.mAddress);
+                if (DEBUG)
+                    Log.v(TAG, "event for device address " + itemAttr.mAddress);
                 ArrayList<Integer> attrList = itemAttr.mAttrList;
                 if (DEBUG)
                     Log.v(TAG, "MESSAGE_GET_ELEM_ATTRS:numAttr=" + numAttr);
@@ -1072,9 +1078,10 @@ public final class Avrcp {
                 break;
 
             case MESSAGE_PLAY_INTERVAL_TIMEOUT:
-                if (DEBUG)
+                if (DEBUG) {
                     Log.v(TAG, "MESSAGE_PLAY_INTERVAL_TIMEOUT");
-                Log.v(TAG, "event for device address " + (BluetoothDevice)msg.obj);
+                    Log.v(TAG, "event for device address " + (BluetoothDevice)msg.obj);
+                }
                 deviceIndex = getIndexForDevice((BluetoothDevice) msg.obj);
                 if (deviceIndex == INVALID_DEVICE_INDEX) {
                     Log.e(TAG,"invalid index for device");
@@ -1082,7 +1089,8 @@ public final class Avrcp {
                 }
                 deviceFeatures[deviceIndex].mPlayPosChangedNT =
                          NOTIFICATION_TYPE_CHANGED;
-                Log.v(TAG, "event for device address " + (BluetoothDevice) msg.obj);
+                if (DEBUG)
+                    Log.v(TAG, "event for device address " + (BluetoothDevice) msg.obj);
                 registerNotificationRspPlayPosNative(deviceFeatures[deviceIndex].mPlayPosChangedNT,
                         (int)getPlayPosition((BluetoothDevice) msg.obj) ,
                         getByteAddress((BluetoothDevice) msg.obj));
@@ -1096,17 +1104,19 @@ public final class Avrcp {
                     Log.e(TAG,"invalid device index");
                     break;
                 }
-                Log.v(TAG, "event for device address " + (String)msg.obj);
+                if (DEBUG)
+                    Log.v(TAG, "event for device address " + (String)msg.obj);
                 setAdressedPlayerRspNative((byte)PLAYER_NOT_ADDRESSED,
                             getByteAddress(mAdapter.getRemoteDevice((String) msg.obj)));
                 deviceFeatures[deviceIndex].mRequestedAddressedPlayerPackageName = null;
                 break;
 
             case MESSAGE_VOLUME_CHANGED:
-                if (DEBUG)
+                if (DEBUG) {
                     Log.v(TAG, "MESSAGE_VOLUME_CHANGED: volume=" + ((byte)msg.arg1 & 0x7f)
                                                         + " ctype=" + msg.arg2);
-                Log.v(TAG, "event for device address " + (String)msg.obj);
+                    Log.v(TAG, "event for device address " + (String)msg.obj);
+                }
                 deviceIndex = getIndexForDevice(mAdapter.getRemoteDevice((String) msg.obj));
                 if (deviceIndex == INVALID_DEVICE_INDEX) {
                     Log.e(TAG,"invalid index for device");
@@ -1149,8 +1159,9 @@ public final class Avrcp {
                 if (DEBUG)
                     Log.d(TAG, "MESSAGE_ADJUST_VOLUME: direction=" + msg.arg1);
                 for (int i = 0; i < playingDevice.size(); i++) {
-                    Log.v(TAG, "event for device address " +
-                            playingDevice.get(i).getAddress());
+                    if (DEBUG)
+                        Log.v(TAG, "event for device address " +
+                                playingDevice.get(i).getAddress());
                     deviceIndex = getIndexForDevice(playingDevice.get(i));
                     if (deviceIndex == INVALID_DEVICE_INDEX) {
                         Log.e(TAG,"Unkown playing device");
@@ -1200,14 +1211,14 @@ public final class Avrcp {
                         sendSetAbsoluteVolume(msg.arg1);
                         continue;
                     }
-                    Log.v(TAG, "event for device address " +
-                            playingDevice.get(i).getAddress());
+                    if (DEBUG)
+                        Log.v(TAG, "event for device address " +
+                                playingDevice.get(i).getAddress());
                     if (deviceFeatures[deviceIndex].mVolCmdInProgress) {
                         if (DEBUG)
                             Log.w(TAG, "There is already a volume command in progress.");
                         continue;
                     }
-                    Log.v(TAG, "event for device address " + (String)msg.obj);
                     boolean isSetVol = setVolumeNative(msg.arg1 ,
                             getByteAddress(deviceFeatures[deviceIndex].mCurrentDevice));
                     if (isSetVol) {
@@ -1225,6 +1236,7 @@ public final class Avrcp {
                     Log.v(TAG, "MESSAGE_ABS_VOL_TIMEOUT: Volume change cmd timed out.");
                 deviceIndex = getIndexForDevice((BluetoothDevice) msg.obj);
                 if (deviceIndex == INVALID_DEVICE_INDEX) {
+                    Log.e(TAG, "event for device address " + (BluetoothDevice)msg.obj);
                     Log.e(TAG,"invalid device index for abs vol timeout");
                     for (int i = 0; i < maxAvrcpConnections; i++) {
                         if (deviceFeatures[i].mVolCmdInProgress == true)
@@ -1233,7 +1245,8 @@ public final class Avrcp {
                     break;
                 }
                 deviceFeatures[deviceIndex].mVolCmdInProgress = false;
-                Log.v(TAG, "event for device address " + (BluetoothDevice)msg.obj);
+                if (DEBUG)
+                    Log.v(TAG, "event for device address " + (BluetoothDevice)msg.obj);
                 if (deviceFeatures[deviceIndex].mAbsVolRetryTimes >= MAX_ERROR_RETRY_TIMES) {
                     deviceFeatures[deviceIndex].mAbsVolRetryTimes = 0;
                 } else {
@@ -1324,10 +1337,13 @@ public final class Avrcp {
                     Log.v(TAG, "MESSAGE_SET_A2DP_AUDIO_STATE:" + msg.arg1);
                 BluetoothDevice playStateChangeDevice =
                         (BluetoothDevice)msg.obj;
-                Log.v(TAG, "event for device address " +
-                        playStateChangeDevice.getAddress());
+                if (DEBUG)
+                    Log.v(TAG, "event for device address " +
+                            playStateChangeDevice.getAddress());
                 deviceIndex = getIndexForDevice(playStateChangeDevice);
                 if (deviceIndex == INVALID_DEVICE_INDEX) {
+                    Log.e(TAG, "event for device address " +
+                            playStateChangeDevice.getAddress());
                     Log.e(TAG,"in valid index for device");
                     break;
                 }
@@ -1431,6 +1447,7 @@ public final class Avrcp {
     private void updateA2dpAudioState(int state, BluetoothDevice device) {
         boolean isPlaying = (state == BluetoothA2dp.STATE_PLAYING);
 
+        if (DEBUG)
         Log.v(TAG,"updateA2dpAudioState");
         if ((isPlaying) && !mAudioManager.isMusicActive()) {
             /* Play state to be updated only for music streaming, not touchtone */
@@ -3930,7 +3947,8 @@ public final class Avrcp {
             String deviceAddress) {
         BluetoothDevice device = mAdapter.getRemoteDevice(deviceAddress);
         int deviceIndex = getIndexForDevice(device);
-        Log.v(TAG,"processRegisterNotification: eventId" + eventId);
+        if (DEBUG)
+            Log.v(TAG,"processRegisterNotification: eventId" + eventId);
         if (deviceIndex == INVALID_DEVICE_INDEX) {
             Log.v(TAG,"device entry not present, bailing out");
             return;
@@ -4621,7 +4639,8 @@ public final class Avrcp {
         for (int i = 0; i < maxAvrcpConnections; i++) {
             if (deviceFeatures[i].mCurrentDevice != null &&
                     deviceFeatures[i].mCurrentDevice.equals(device)) {
-                Log.i(TAG,"device found at index " + i);
+                if (DEBUG)
+                    Log.i(TAG,"device found at index " + i);
                 return i;
             }
         }
